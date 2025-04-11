@@ -21,7 +21,7 @@ void limparString(char *str) {
   strcpy(str, limpa);
 }
 
-Processos* LerProcessosCSV(const char *arquivo, int *tamanho) {
+Processos* CarregaProcessos(const char *arquivo, int *tamanho) {
   FILE *fp = fopen(arquivo, "r");
   if (!fp) {
       printf("Erro ao abrir o arquivo %s.\n", arquivo);
@@ -69,31 +69,32 @@ Processos* LerProcessosCSV(const char *arquivo, int *tamanho) {
       if (sp) strcpy(dados[*tamanho].assunto, sp);
 
       sp = strtok(NULL, ",");
-      sp = strtok(NULL, ",");
       if (sp) dados[*tamanho].eleicao = atoi(sp);
 
       (*tamanho)++;
   }
 
+
+
   fclose(fp);
   return dados;
 }
 
-void OrdenarPorIdESalvar(Processos *processos, int tamanho) {
-
-  Processos *copia = malloc(tamanho * sizeof(Processos));
-  if (!copia) {
-      printf("Erro ao alocar memória para a cópia.\n");
-      return;
+Processos* OrdenarPorId(Processos *processos, int tamanho) {
+  Processos *ordenado = malloc(tamanho * sizeof(Processos));
+  if (!ordenado) {
+      printf("Erro ao alocar memória.\n");
+      return NULL;
   }
-  memcpy(copia, processos, tamanho * sizeof(Processos));
+
+  memcpy(ordenado, processos, tamanho * sizeof(Processos));
 
   for (int i = 0; i < tamanho - 1; i++) {
       for (int j = i + 1; j < tamanho; j++) {
-          if (strcmp(copia[i].id, copia[j].id) > 0) {
-              Processos temp = copia[i];
-              copia[i] = copia[j];
-              copia[j] = temp;
+          if (strcmp(ordenado[i].id, ordenado[j].id) > 0) {
+              Processos temp = ordenado[i];
+              ordenado[i] = ordenado[j];
+              ordenado[j] = temp;
           }
       }
   }
@@ -101,36 +102,36 @@ void OrdenarPorIdESalvar(Processos *processos, int tamanho) {
   FILE *fp = fopen("ordenado_por_id.csv", "w");
   if (!fp) {
       printf("Erro ao criar arquivo ordenado_por_id.csv\n");
-      free(copia);
-      return;
+      free(ordenado);
+      return NULL;
   }
 
   fprintf(fp, "id;numero;data_ajuizamento;id_classe;id_assunto;ano_eleicao\n");
   for (int i = 0; i < tamanho; i++) {
       fprintf(fp, "%s,%s,%s,%s}%s},%d\n",
-          copia[i].id, copia[i].numero, copia[i].data,
-          copia[i].classe, copia[i].assunto, copia[i].eleicao);
+              ordenado[i].id, ordenado[i].numero, ordenado[i].data,
+              ordenado[i].classe, ordenado[i].assunto, ordenado[i].eleicao);
   }
 
   fclose(fp);
-  free(copia);
-
+  return ordenado;
 }
 
-void OrdenarPorDataESalvar(Processos *processos, int tamanho) {
-  Processos *copia = malloc(tamanho * sizeof(Processos));
-  if (!copia) {
-      printf("Erro ao alocar memória para a cópia.\n");
-      return;
+Processos* OrdenarPorData(Processos *processos, int tamanho) {
+  Processos *ordenado = malloc(tamanho * sizeof(Processos));
+  if (!ordenado) {
+      printf("Erro ao alocar memória.\n");
+      return NULL;
   }
-  memcpy(copia, processos, tamanho * sizeof(Processos));
+
+  memcpy(ordenado, processos, tamanho * sizeof(Processos));
 
   for (int i = 0; i < tamanho - 1; i++) {
       for (int j = i + 1; j < tamanho; j++) {
-          if (strcmp(copia[i].data, copia[j].data) < 0) {
-              Processos temp = copia[i];
-              copia[i] = copia[j];
-              copia[j] = temp;
+          if (strcmp(ordenado[i].data, ordenado[j].data) < 0) {
+              Processos temp = ordenado[i];
+              ordenado[i] = ordenado[j];
+              ordenado[j] = temp;
           }
       }
   }
@@ -138,19 +139,19 @@ void OrdenarPorDataESalvar(Processos *processos, int tamanho) {
   FILE *fp = fopen("ordenado_por_data.csv", "w");
   if (!fp) {
       printf("Erro ao criar arquivo ordenado_por_data.csv\n");
-      free(copia);
-      return;
+      free(ordenado);
+      return NULL;
   }
 
   fprintf(fp, "id;numero;data_ajuizamento;id_classe;id_assunto;ano_eleicao\n");
   for (int i = 0; i < tamanho; i++) {
       fprintf(fp, "%s,%s,%s,%s}%s},%d\n",
-          copia[i].id, copia[i].numero, copia[i].data,
-          copia[i].classe, copia[i].assunto, copia[i].eleicao);
+              ordenado[i].id, ordenado[i].numero, ordenado[i].data,
+              ordenado[i].classe, ordenado[i].assunto, ordenado[i].eleicao);
   }
 
   fclose(fp);
-  free(copia);
+  return ordenado;
 }
 
 int ContarProcessosPorClasse(Processos processos[], int tamanho, const char *classeBuscada) {
@@ -207,12 +208,11 @@ void ContarAssuntos(Processos processos[], int tamanho) {
 
 
 void ListarAssuntos(Processos processos[], int tamanho) {
-  Cabecalho();
   int contagem = 0;
+  printf("\n\nid;id_assunto");
   for (int i = 0; i < tamanho; i++) {
     char dataCopia[256];
     strcpy(dataCopia, processos[i].assunto);
-
 
     int countVirgulas = 0;
 
@@ -224,7 +224,7 @@ void ListarAssuntos(Processos processos[], int tamanho) {
 
     if (countVirgulas > 1) { 
       contagem++;
-      printf("\n%d- %s,%s,%s%s},%s},%d", contagem,processos[i].id, processos[i].numero, processos[i].data, processos[i].assunto, processos[i].classe, processos[i].eleicao);
+      printf("\n%d- %s%s}\"", contagem,processos[i].id, processos[i].assunto);
     }
 
   }

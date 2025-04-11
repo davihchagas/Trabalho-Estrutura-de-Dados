@@ -9,10 +9,13 @@ int main() {
     if (!processos) return 1;
 
     //Função 1
-    OrdenarPorId(processos, tamanho);
+    Processos *ordenadoId = OrdenarPorId(processos, tamanho);
+    if (ordenadoId) free(ordenadoId);
 
     //Função 2
-    OrdenarPorData(processos, tamanho);
+    Processos *ordenadoData = OrdenarPorData(processos, tamanho);
+    if (ordenadoData) free(ordenadoData);
+
 
     // Função 3
     int qtdClasse = ContarProcessosPorClasse(processos, tamanho, "12193");

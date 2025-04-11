@@ -17,10 +17,10 @@ void Cabecalho();
 Processos* CarregaProcessos(const char *nomeArquivo, int *tamanho);
 
 //Ordenar, em ordem crescente, o conjunto de dados a partir do atributo “id”;
-void OrdenarPorId(Processos *processos, int tamanho);
+Processos* OrdenarPorId(Processos *processos, int tamanho);
 
 //Ordenar, em ordem decrescente, o conjunto de dados a partir do atributo “data_ajuizamento”;
-void OrdenarPorData(Processos *processos, int tamanho);
+Processos* OrdenarPorData(Processos *processos, int tamanho);
 
 //Contar quantos processos estão vinculados a um determinado “id_classe”;
 int ContarProcessosPorClasse(Processos processos[], int tamanho, const char *classeBuscada);
