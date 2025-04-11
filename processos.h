@@ -13,11 +13,14 @@ typedef struct {
 void limparString(char *str);
 
 void Cabecalho();
+
+Processos* LerProcessosCSV(const char *nomeArquivo, int *tamanho);
+
 //Ordenar, em ordem crescente, o conjunto de dados a partir do atributo “id”;
-Processos OrdenarId();
+void OrdenarPorIdESalvar(Processos *processos, int tamanho);
 
 //Ordenar, em ordem decrescente, o conjunto de dados a partir do atributo “data_ajuizamento”;
-Processos OrdenarData();
+void OrdenarPorDataESalvar(Processos *processos, int tamanho);
 
 //Contar quantos processos estão vinculados a um determinado “id_classe”;
 int ContarProcessosPorClasse(Processos processos[], int tamanho, const char *classeBuscada);

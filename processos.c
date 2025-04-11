@@ -4,7 +4,7 @@
 #include "processos.h"
 
 void Cabecalho() {
-  printf("\nid;numero;data_ajuizamento;id_classe;id_assunto;ano_eleicao\n");
+  printf("\n\nid;numero;data_ajuizamento;id_classe;id_assunto;ano_eleicao\n");
 }
 
 void limparString(char *str) {
@@ -19,6 +19,138 @@ void limparString(char *str) {
 
   limpa[j] = '\0';
   strcpy(str, limpa);
+}
+
+Processos* LerProcessosCSV(const char *arquivo, int *tamanho) {
+  FILE *fp = fopen(arquivo, "r");
+  if (!fp) {
+      printf("Erro ao abrir o arquivo %s.\n", arquivo);
+      return NULL;
+  }
+
+  int capacidade = 100;
+  *tamanho = 0;
+  Processos *dados = malloc(capacidade * sizeof(Processos));
+  if (!dados) {
+      printf("Erro de alocação de memória.\n");
+      fclose(fp);
+      return NULL;
+  }
+
+  char linha[2048];
+  fgets(linha, sizeof(linha), fp);
+
+  while (fgets(linha, sizeof(linha), fp)) {
+      if (*tamanho >= capacidade) {
+          capacidade *= 2;
+          Processos *temp = realloc(dados, capacidade * sizeof(Processos));
+          if (!temp) {
+              printf("Erro ao realocar memória.\n");
+              free(dados);
+              fclose(fp);
+              return NULL;
+          }
+          dados = temp;
+      }
+
+      char *sp = strtok(linha, ",");
+      if (sp) strcpy(dados[*tamanho].id, sp);
+
+      sp = strtok(NULL, ",");
+      if (sp) strcpy(dados[*tamanho].numero, sp);
+
+      sp = strtok(NULL, ",");
+      if (sp) strcpy(dados[*tamanho].data, sp);
+
+      sp = strtok(NULL, "}");
+      if (sp) strcpy(dados[*tamanho].classe, sp);
+
+      sp = strtok(NULL, "}");
+      if (sp) strcpy(dados[*tamanho].assunto, sp);
+
+      sp = strtok(NULL, ",");
+      sp = strtok(NULL, ",");
+      if (sp) dados[*tamanho].eleicao = atoi(sp);
+
+      (*tamanho)++;
+  }
+
+  fclose(fp);
+  return dados;
+}
+
+void OrdenarPorIdESalvar(Processos *processos, int tamanho) {
+
+  Processos *copia = malloc(tamanho * sizeof(Processos));
+  if (!copia) {
+      printf("Erro ao alocar memória para a cópia.\n");
+      return;
+  }
+  memcpy(copia, processos, tamanho * sizeof(Processos));
+
+  for (int i = 0; i < tamanho - 1; i++) {
+      for (int j = i + 1; j < tamanho; j++) {
+          if (strcmp(copia[i].id, copia[j].id) > 0) {
+              Processos temp = copia[i];
+              copia[i] = copia[j];
+              copia[j] = temp;
+          }
+      }
+  }
+
+  FILE *fp = fopen("ordenado_por_id.csv", "w");
+  if (!fp) {
+      printf("Erro ao criar arquivo ordenado_por_id.csv\n");
+      free(copia);
+      return;
+  }
+
+  fprintf(fp, "id;numero;data_ajuizamento;id_classe;id_assunto;ano_eleicao\n");
+  for (int i = 0; i < tamanho; i++) {
+      fprintf(fp, "%s,%s,%s,%s}%s},%d\n",
+          copia[i].id, copia[i].numero, copia[i].data,
+          copia[i].classe, copia[i].assunto, copia[i].eleicao);
+  }
+
+  fclose(fp);
+  free(copia);
+
+}
+
+void OrdenarPorDataESalvar(Processos *processos, int tamanho) {
+  Processos *copia = malloc(tamanho * sizeof(Processos));
+  if (!copia) {
+      printf("Erro ao alocar memória para a cópia.\n");
+      return;
+  }
+  memcpy(copia, processos, tamanho * sizeof(Processos));
+
+  for (int i = 0; i < tamanho - 1; i++) {
+      for (int j = i + 1; j < tamanho; j++) {
+          if (strcmp(copia[i].data, copia[j].data) < 0) {
+              Processos temp = copia[i];
+              copia[i] = copia[j];
+              copia[j] = temp;
+          }
+      }
+  }
+
+  FILE *fp = fopen("ordenado_por_data.csv", "w");
+  if (!fp) {
+      printf("Erro ao criar arquivo ordenado_por_data.csv\n");
+      free(copia);
+      return;
+  }
+
+  fprintf(fp, "id;numero;data_ajuizamento;id_classe;id_assunto;ano_eleicao\n");
+  for (int i = 0; i < tamanho; i++) {
+      fprintf(fp, "%s,%s,%s,%s}%s},%d\n",
+          copia[i].id, copia[i].numero, copia[i].data,
+          copia[i].classe, copia[i].assunto, copia[i].eleicao);
+  }
+
+  fclose(fp);
+  free(copia);
 }
 
 int ContarProcessosPorClasse(Processos processos[], int tamanho, const char *classeBuscada) {
@@ -38,7 +170,6 @@ int ContarProcessosPorClasse(Processos processos[], int tamanho, const char *cla
           token = strtok(NULL, ",");
       }
   }
-
   return total;
 }
 
@@ -71,16 +202,20 @@ void ContarAssuntos(Processos processos[], int tamanho) {
       }
   }
 
-  printf("\nTotal de id_assuntos distintos: %d\n", totalUnicos);
+  printf("\nTotal de id_assuntos distintos: %d", totalUnicos);
 }
 
 
 void ListarAssuntos(Processos processos[], int tamanho) {
+  Cabecalho();
+  int contagem = 0;
   for (int i = 0; i < tamanho; i++) {
     char dataCopia[256];
     strcpy(dataCopia, processos[i].assunto);
 
+
     int countVirgulas = 0;
+
     for (int j = 0; dataCopia[j] != '\0'; j++) {
       if (dataCopia[j] == ',') {
         countVirgulas++;
@@ -88,8 +223,10 @@ void ListarAssuntos(Processos processos[], int tamanho) {
     }
 
     if (countVirgulas > 1) { 
-      printf("\n%s,%s,%s%s},%s},%d", processos[i].id, processos[i].numero, processos[i].data, processos[i].assunto, processos[i].classe, processos[i].eleicao);
+      contagem++;
+      printf("\n%d- %s,%s,%s%s},%s},%d", contagem,processos[i].id, processos[i].numero, processos[i].data, processos[i].assunto, processos[i].classe, processos[i].eleicao);
     }
+
   }
 }
 
