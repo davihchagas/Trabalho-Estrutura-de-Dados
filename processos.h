@@ -14,13 +14,13 @@ void limparString(char *str);
 
 void Cabecalho();
 
-Processos* LerProcessosCSV(const char *nomeArquivo, int *tamanho);
+Processos* CarregaProcessos(const char *nomeArquivo, int *tamanho);
 
 //Ordenar, em ordem crescente, o conjunto de dados a partir do atributo “id”;
-void OrdenarPorIdESalvar(Processos *processos, int tamanho);
+void OrdenarPorId(Processos *processos, int tamanho);
 
 //Ordenar, em ordem decrescente, o conjunto de dados a partir do atributo “data_ajuizamento”;
-void OrdenarPorDataESalvar(Processos *processos, int tamanho);
+void OrdenarPorData(Processos *processos, int tamanho);
 
 //Contar quantos processos estão vinculados a um determinado “id_classe”;
 int ContarProcessosPorClasse(Processos processos[], int tamanho, const char *classeBuscada);

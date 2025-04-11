@@ -5,11 +5,14 @@
 
 int main() {
     int tamanho = 0;
-    Processos *processos = LerProcessosCSV("processos.csv", &tamanho);
+    Processos *processos = CarregaProcessos("processos.csv", &tamanho);
     if (!processos) return 1;
 
-    OrdenarPorIdESalvar(processos, tamanho);
-    OrdenarPorDataESalvar(processos, tamanho);
+    //Função 1
+    OrdenarPorId(processos, tamanho);
+
+    //Função 2
+    OrdenarPorData(processos, tamanho);
 
     // Função 3
     int qtdClasse = ContarProcessosPorClasse(processos, tamanho, "12193");
